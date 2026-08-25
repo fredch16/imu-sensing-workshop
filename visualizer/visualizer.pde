@@ -1,103 +1,110 @@
 import processing.serial.*;
 
-Serial imuPort;
+Serial myPort;
 float roll, pitch, yaw;
 
-// Set this to part of your ESP32 port name, for example "cu.usbserial" or "COM5".
-// Leave it empty to use the only available port. If several exist, the sketch lists
-// them and stops so you can make an explicit, reliable choice.
-final String PORT_HINT = "";
-
 void setup() {
-  size(1000, 700, P3D);
-  String portName = chooseSerialPort(PORT_HINT);
-  if (portName == null) {
-    println("Set PORT_HINT near the top of visualizer.pde, then run again.");
-    exit();
-    return;
-  }
-  println("Opening " + portName + " at 115200 baud");
-  imuPort = new Serial(this, portName, 115200);
-  imuPort.clear();
-  imuPort.bufferUntil('\n');
-}
-
-String chooseSerialPort(String hint) {
-  String[] ports = Serial.list();
-  println("Available serial ports:");
-  printArray(ports);
-  if (hint.length() > 0) {
-    for (String port : ports) if (port.indexOf(hint) >= 0) return port;
-    println("No port contains PORT_HINT: " + hint);
-    return null;
-  }
-  return ports.length == 1 ? ports[0] : null;
+  fullScreen(P3D); // Fullscreen mode
+  
+  println(Serial.list());
+  
+  // Make sure this index matches your ESP32 port, easy way to check is to see which one you selected on arduino IDE!
+  String portName = Serial.list()[1]; 
+  myPort = new Serial(this, portName, 115200);
+  myPort.bufferUntil('\n');
 }
 
 void draw() {
   background(30);
+  
+  // ----- 3D SCENE -----
+  // Turn on lights for the 3D model
   directionalLight(255, 255, 255, -1, 1, -1);
   ambientLight(100, 100, 100);
-  pushMatrix();
-  translate(width / 2, height / 2, 0);
-  rotateY(radians(yaw));
-  rotateX(radians(pitch));
-  rotateZ(radians(roll));
+
+  pushMatrix(); // Save the grid state
+  translate(width/2, height/2, 0);
+  
+  // Scale everything by 2.0 (Twice as large!)
+  scale(2.0); 
+
+  // Apply rotations (Plane faces away, matched to hardware)
+  rotateY(radians(yaw));      
+  rotateX(radians(pitch));    
+  rotateZ(radians(roll));     
+  
   drawPlane();
-  popMatrix();
+  popMatrix(); // Restore the grid state
+  
+  // ----- 2D HUD -----
   drawHUD();
 }
 
-void serialEvent(Serial port) {
-  String line = port.readStringUntil('\n');
-  if (line == null) return;
-  String[] fields = split(trim(line), '/');
-  if (fields.length != 3) return;
-  try {
-    float nextRoll = Float.parseFloat(trim(fields[0]));
-    float nextPitch = Float.parseFloat(trim(fields[1]));
-    float nextYaw = Float.parseFloat(trim(fields[2]));
-    if (Float.isNaN(nextRoll) || Float.isInfinite(nextRoll) ||
-        Float.isNaN(nextPitch) || Float.isInfinite(nextPitch) ||
-        Float.isNaN(nextYaw) || Float.isInfinite(nextYaw)) return;
-    roll = nextRoll;
-    pitch = nextPitch;
-    yaw = nextYaw;
-  } catch (NumberFormatException error) {
-    // Startup messages and incomplete/malformed lines are intentionally ignored.
-  }
-}
-
 void drawHUD() {
-  camera();
+  // Reset the camera to a flat 2D view and turn off 3D depth/lights
+  camera(); 
   hint(DISABLE_DEPTH_TEST);
-  noLights();
-  fill(255);
-  textSize(28);
-  text("Roll:  " + nf(roll, 1, 2) + " deg", 35, 50);
-  text("Pitch: " + nf(pitch, 1, 2) + " deg", 35, 90);
-  text("Yaw:   " + nf(yaw, 1, 2) + " deg (gyro-only; drifts)", 35, 130);
-  hint(ENABLE_DEPTH_TEST);
+  noLights(); 
+  
+  textSize(40); // Large font for fullscreen
+  fill(255);    // White text
+  
+  // nf() formats the numbers so they don't jitter (1 digit left of decimal, 2 right)
+  text("Roll  (X): " + nf(roll, 1, 2) + "°", 50, 80);
+  text("Pitch (Y): " + nf(pitch, 1, 2) + "°", 50, 140);
+  text("Yaw   (Z): " + nf(yaw, 1, 2) + "°", 50, 200);
+  
+  // Turn 3D depth testing back on for the next frame
+  hint(ENABLE_DEPTH_TEST); 
 }
 
 void drawPlane() {
   noStroke();
+
+  // ----- FUSELAGE -----
   fill(200, 80, 80);
-  box(50, 30, 280);
   pushMatrix();
-  box(420, 8, 90);
+  box(60, 40, 400); 
   popMatrix();
-  pushMatrix();
-  translate(0, 0, 115);
-  box(150, 7, 55);
-  popMatrix();
-  pushMatrix();
-  translate(0, -30, 115);
-  box(8, 65, 65);
-  popMatrix();
+  
+  // ----- COCKPIT -----
   fill(100, 180, 255);
   pushMatrix();
-  translate(0, -18, -70);
-  box(35, 16, 65);
+  translate(0, -20, -100); 
+  box(40, 20, 80);
   popMatrix();
+
+  // ----- WINGS -----
+  fill(200, 80, 80);
+  pushMatrix();
+  box(600, 10, 120);
+  popMatrix();
+
+  // ----- HORIZONTAL TAIL -----
+  pushMatrix();
+  translate(0, 0, 170); 
+  box(200, 8, 80);
+  popMatrix();
+
+  // ----- VERTICAL TAIL -----
+  pushMatrix();
+  translate(0, -30, 170); 
+  box(10, 80, 100);
+  popMatrix();
+}
+
+void serialEvent(Serial myPort) {
+  String data = myPort.readStringUntil('\n');
+  if (data != null) {
+    data = trim(data);
+    
+    // Parses both formats automatically
+    String[] parts = splitTokens(data, " /:XYZ");
+    
+    if (parts.length >= 3) {
+      roll = float(parts[0]);
+      pitch = float(parts[1]);
+      yaw = float(parts[2]);
+    }
+  }
 }
