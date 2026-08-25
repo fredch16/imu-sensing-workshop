@@ -2,8 +2,8 @@
 #include <Wire.h>
 
 const uint8_t MPU_ADDRESS = 0x68;
-const int SDA_PIN = 21;
-const int SCL_PIN = 22;
+const int SDA_PIN = 25;
+const int SCL_PIN = 26;
 const uint32_t SAMPLE_PERIOD_US = 5000;  // 200 Hz
 const float FILTER_GYRO_WEIGHT = 0.98f;
 

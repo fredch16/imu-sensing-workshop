@@ -12,8 +12,8 @@ This workshop builds a register-level orientation tracker one idea at a time. An
 MPU6050    ESP32
 VCC   ->   3V3
 GND   ->   GND
-SDA   ->   GPIO 21
-SCL   ->   GPIO 22
+SDA   ->   GPIO 25
+SCL   ->   GPIO 26
 ```
 
 The sketches use MPU6050 address `0x68`, I2C at 100 kHz, accelerometer range +/-2 g, gyro range +/-250 degrees/second, and serial at 115200 baud. Some breakout boards accept 5 V, but this workshop deliberately uses the ESP32's 3.3 V supply.

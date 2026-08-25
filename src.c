@@ -40,10 +40,10 @@ void setup() {
     Serial.begin(115200);
     delay(1000);
 
-    // Arduino Uno uses fixed I2C pins:
-    // SDA = A4
-    // SCL = A5
-    Wire.begin();
+    // ESP32 I2C pins used by this workshop:
+    // SDA = GPIO 25
+    // SCL = GPIO 26
+    Wire.begin(25, 26);
     Wire.setClock(100000);
 
     // Wake MPU6050
