@@ -27,7 +27,7 @@ bool writeRegister(uint8_t reg, uint8_t value) {
 void setup() {
   Serial.begin(115200);
   delay(500);
-  Wire.begin(21, 22, 100000);  // SDA, SCL, 100 kHz
+  Wire.begin(25, 26, 100000);  // SDA, SCL, 100 kHz
   if (!writeRegister(0x6B, 0x00) ||  // Wake up
       !writeRegister(0x1C, 0x00) ||  // Accelerometer +/-2 g
       !writeRegister(0x1B, 0x00)) {  // Gyroscope +/-250 deg/s

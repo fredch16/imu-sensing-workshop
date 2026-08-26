@@ -4,6 +4,7 @@
 
   NEW IN THIS CHECKPOINT
   Measure elapsed time and integrate all three gyro axes.
+  Accelerometer tilt calculations remain in place for the next checkpoint.
 
   SUCCESS LOOKS LIKE
   Angles follow rotations but slowly drift while the sensor is stationary.
@@ -19,8 +20,10 @@ const uint8_t MPU_ADDRESS = 0x68;
 const uint32_t SAMPLE_PERIOD_US = 5000;  // 200 Hz
 const int CALIBRATION_SAMPLES = 500;
 
+float accelX, accelY, accelZ;
 float gyroX, gyroY, gyroZ;
 float gyroBiasX, gyroBiasY, gyroBiasZ;
+float accelRoll, accelPitch;
 float roll, pitch, yaw;
 uint32_t lastSampleUs;
 
@@ -29,6 +32,27 @@ bool writeRegister(uint8_t reg, uint8_t value) {
   Wire.write(reg);
   Wire.write(value);
   return Wire.endTransmission(true) == 0;
+}
+
+bool readAccel() {
+  Wire.beginTransmission(MPU_ADDRESS);
+  Wire.write(0x3B);
+
+  if (Wire.endTransmission(false) != 0) {
+    return false;
+  }
+  if (Wire.requestFrom(MPU_ADDRESS, (size_t)6, true) != 6) {
+    return false;
+  }
+
+  int16_t rawX = (int16_t)((uint16_t(Wire.read()) << 8) | Wire.read());
+  int16_t rawY = (int16_t)((uint16_t(Wire.read()) << 8) | Wire.read());
+  int16_t rawZ = (int16_t)((uint16_t(Wire.read()) << 8) | Wire.read());
+
+  accelX = rawX / 16384.0f;
+  accelY = rawY / 16384.0f;
+  accelZ = rawZ / 16384.0f;
+  return true;
 }
 
 bool readGyro() {
@@ -50,6 +74,14 @@ bool readGyro() {
   gyroY = rawY / 131.0f;
   gyroZ = rawZ / 131.0f;
   return true;
+}
+
+void computeAccelAngles() {
+  accelRoll = atan2f(accelY, accelZ) * 180.0f / PI;
+  accelPitch = atan2f(
+                 -accelX,
+                 sqrtf(accelY * accelY + accelZ * accelZ)
+               ) * 180.0f / PI;
 }
 
 bool calibrateGyro() {
@@ -87,9 +119,10 @@ float wrapAngle(float angle) {
 void setup() {
   Serial.begin(115200);
   delay(500);
-  Wire.begin(21, 22, 100000);
+  Wire.begin(25, 26, 100000);
 
   if (!writeRegister(0x6B, 0x00) ||
+      !writeRegister(0x1C, 0x00) ||
       !writeRegister(0x1B, 0x00) ||
       !calibrateGyro()) {
     Serial.println("MPU6050 setup or calibration failed");
@@ -110,8 +143,8 @@ void loop() {
   }
   lastSampleUs = now;
 
-  if (!readGyro()) {
-    Serial.println("Gyroscope read failed");
+  if (!readAccel() || !readGyro()) {
+    Serial.println("Sensor read failed");
     return;
   }
 
@@ -119,6 +152,8 @@ void loop() {
   if (dt > 0.1f) {
     return;
   }
+
+  computeAccelAngles();
 
   roll = wrapAngle(roll + (gyroX - gyroBiasX) * dt);
   pitch = wrapAngle(pitch + (gyroY - gyroBiasY) * dt);

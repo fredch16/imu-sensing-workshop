@@ -50,7 +50,7 @@ bool readAccel() {
 void setup() {
   Serial.begin(115200);
   delay(500);
-  Wire.begin(21, 22, 100000);
+  Wire.begin(25, 26, 100000);
 
   if (!writeRegister(0x6B, 0x00) || !writeRegister(0x1C, 0x00)) {
     Serial.println("MPU6050 setup failed");
