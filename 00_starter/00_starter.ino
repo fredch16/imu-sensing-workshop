@@ -5,6 +5,9 @@
   NEW IN THIS CHECKPOINT
   Set up serial, I2C, and the sensor registers.
 
+  UNLOCKED API
+  See API.md in this folder.
+
   SUCCESS LOOKS LIKE
   Serial Monitor prints "MPU6050 is ready".
 

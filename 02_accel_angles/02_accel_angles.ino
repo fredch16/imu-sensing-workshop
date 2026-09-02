@@ -5,6 +5,9 @@
   NEW IN THIS CHECKPOINT
   Convert the acceleration vector into tilt angles with atan2().
 
+  UNLOCKED API
+  See API.md in this folder.
+
   SUCCESS LOOKS LIKE
   Roll and pitch follow the sensor's tilt while it is stationary.
 

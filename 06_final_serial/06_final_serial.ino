@@ -5,6 +5,9 @@
   NEW IN THIS CHECKPOINT
   Replace human-readable output with three slash-separated values.
 
+  UNLOCKED API
+  See API.md in this folder.
+
   SUCCESS LOOKS LIKE
   Serial Monitor shows lines such as: 1.234/-2.345/3.456
 

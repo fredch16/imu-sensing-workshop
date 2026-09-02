@@ -6,6 +6,9 @@
   Measure elapsed time and integrate all three gyro axes.
   Accelerometer tilt calculations remain in place for the next checkpoint.
 
+  UNLOCKED API
+  See API.md in this folder.
+
   SUCCESS LOOKS LIKE
   Angles follow rotations but slowly drift while the sensor is stationary.
 

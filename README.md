@@ -28,17 +28,26 @@ The sketches use MPU6050 address `0x68`, I2C at 100 kHz, accelerometer range +/-
 
 Keep the sensor still and in the intended startup pose during the roughly 1.5-second gyro calibration. That pose becomes zero roll and pitch in the filtered sketches. Axis signs assume the MPU6050 board's printed X/Y/Z axes; reverse a sign in both the matching accelerometer angle and gyro rate if your physical mounting needs a different convention.
 
-## Checkpoints
+## How the workshop works
 
-| Folder | Result |
-| --- | --- |
-| `00_starter` | Wake and configure the sensor |
-| `01_raw_accel` | Read acceleration in g |
-| `02_accel_angles` | Derive absolute roll/pitch tilt from gravity |
-| `03_raw_gyro` | Read calibrated angular velocity in deg/s |
-| `04_gyro_integration` | Integrate rates and observe drift |
-| `05_complementary_filter` | Stabilize roll/pitch with gravity |
-| `06_final_serial` | Stream `roll/pitch/yaw` at about 40 Hz |
+Build the project one level at a time. Each checkpoint folder contains two things:
+
+- The `.ino` sketch is a working checkpoint you can compare against when you are stuck.
+- `API.md` is the documentation unlocked for that level. It gives you the available functions, parameters, return values, and small usage patterns without giving away the complete solution.
+
+Start with the mission in `00_starter/API.md`. Make your own attempt using only the APIs unlocked so far, upload it, and check the success condition. Move on when it works; open the checkpoint sketch only when you need a hint or want to catch up.
+
+## Levels
+
+| Level | Mission | New unlocks |
+| --- | --- | --- |
+| [`00_starter`](00_starter/API.md) | Wake and configure the sensor | Serial, timing, and I2C writes |
+| [`01_raw_accel`](01_raw_accel/API.md) | Read acceleration in g | I2C reads and raw-byte conversion |
+| [`02_accel_angles`](02_accel_angles/API.md) | Derive roll/pitch from gravity | `atan2f()`, `sqrtf()`, and `PI` |
+| [`03_raw_gyro`](03_raw_gyro/API.md) | Read calibrated angular velocity | Sampling loops and bias calibration |
+| [`04_gyro_integration`](04_gyro_integration/API.md) | Integrate rates and observe drift | `micros()` and elapsed-time integration |
+| [`05_complementary_filter`](05_complementary_filter/API.md) | Stabilize roll/pitch with gravity | Reference parameters and sensor fusion |
+| [`06_final_serial`](06_final_serial/API.md) | Stream data to the visualizer | The serial wire protocol |
 | `final` | Polished reference implementation |
 
 Yaw has no absolute correction: the MPU6050 has no magnetometer, so yaw is integrated from gyro Z and will drift over time. Accelerometer roll/pitch can also be disturbed by strong linear acceleration.

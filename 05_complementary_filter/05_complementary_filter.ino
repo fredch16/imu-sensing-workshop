@@ -3,7 +3,11 @@
   Combine stable accelerometer tilt with responsive gyro integration.
 
   NEW IN THIS CHECKPOINT
-  Add accelerometer angles and a complementary filter.
+  Combine the existing accelerometer angles and gyro integration with a
+  complementary filter.
+
+  UNLOCKED API
+  See API.md in this folder.
 
   SUCCESS LOOKS LIKE
   Roll and pitch resist drift. Yaw still drifts because it is gyro-only.

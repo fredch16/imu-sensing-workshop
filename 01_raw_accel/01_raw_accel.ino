@@ -5,6 +5,9 @@
   NEW IN THIS CHECKPOINT
   Read six accelerometer bytes and convert raw counts to g.
 
+  UNLOCKED API
+  See API.md in this folder.
+
   SUCCESS LOOKS LIKE
   One axis is near +1 g or -1 g while the sensor is stationary.
 
